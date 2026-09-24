@@ -12,7 +12,7 @@ A judge's roster runs 3,000 cases deep. A typical day lists 60 hearings; the cou
 | **Complexity** | L1 (fixed schedule) → L2 (dynamic + realistic data) → L3 (behavioural / agent-based) — see the case study |
 | **Submit by** | 4:30pm — pull request against this repo, ready for review |
 
-Full context — the problem, the three judges' styles, the ask, and what "good" looks like — is in [`Scheduling Justice - Case Study.pdf`](./Scheduling%20Justice%20-%20Case%20Study.pdf). Read that first. This README is the technical entry point.
+Full context — the problem, the three judges' styles, the ask, and what "good" looks like — is in [`Scheduling Justice - Case Study.pdf`]([./Scheduling%20Justice%20-%20Case%20Study.pdf](https://drive.google.com/file/d/1yYbbY5ADWnRgNCkearerVrZsIPGjtxx5/view?usp=sharing)). Read that first. This README is the technical entry point.
 
 ## Repo layout
 
