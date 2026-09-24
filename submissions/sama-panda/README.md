@@ -14,11 +14,12 @@ pip install -r requirements.txt
 ## Seed + run API
 
 ```bash
-# Seed SQLite from hackathon roster (idempotent upsert)
-python -m src.seed --reset
-
-# API (CORS * for local Coco UI)
+# Terminal A — API
 uvicorn src.main:app --reload --host 127.0.0.1 --port 8000
+
+# Seed demo (wipe + roster_3000) — or Overview → Seed in UI
+curl -X POST http://127.0.0.1:8000/seed/demo
+# alt: python -m src.seed --reset
 ```
 
 DB file: `submissions/sama-panda/data/readiness.db`  

@@ -3,62 +3,64 @@
 ## 1. Team
 
 - **Team / solo name:** sama-panda
-- **Members:** Sama team 4 (P&A)
-- **Complexity level claimed:** L1 — readiness gate (defects → READY/BLOCKED/HEALING) plus fixed-rule minute packer into List 1 / List 2 with +25% overbook and ageing score.
+- **Members:** Sama (sama-panda) / Paul (P&A)
+- **Complexity level claimed:** L1 readiness + L1 minute packer (greedy)
 
 ## 2. One-line summary
 
-Only READY cases enter the day packer; the packer fills judge sitting blocks by duration table + ageing, with a 25% overbook buffer, and waitlists the rest for lack of minute capacity.
+Readiness gate (blocking/soft defects) + Zeng-style minute packer `Generate` for READY-only cause lists.
 
 ## 3. The approach
 
-- **Inputs:** Local `data/roster_3000.csv` (synthetic scale of the hackathon roster), `data/court_calendar.csv` (working days / holidays), hearing-type duration defaults, fixed purpose→defect catalog. Generator notes live in README; we do not overwrite repo-root `data/`.
-- **Core logic (readiness):** Normalize purpose/stage → attach required defect codes → keyword overlays on `last_hearing_summary` → `recompute_readiness`: only **blocking** open defects gate READY (soft defects warn). Party/counsel actions → submitted; registry verify/waive/reject. Soft↔blocking toggles via judge **Defect policy**.
-- **Core logic (packer):** `POST /generate` takes READY pool for a working day, packs by duration mins into sitting blocks (Zeng-style expected load + overbook %), ranks by ageing score, returns listed + waitlisted (`no_capacity`). Week mode chains days with `exclude_case_numbers` so later days take the next tranche.
-- **Key decisions:** Soft defects do not block listing; holidays refused unless `force_holiday`; demo seed is explicit (`POST /seed/demo` / Overview button) — empty DB stays empty until seeded.
-- **Assumptions:** Seed invents defects (roster has no preparedness fields); auth is stub header `X-Actor-Role`; uploads are URI/note refs.
+- Soft defects do not block READY; judge toggles soft↔blocking via `GET/PATCH /policy`.
+- `POST /generate` packs READY cases by expected load with a +25% overbook buffer into sitting blocks; waitlists the rest (`no_capacity`).
+- Multi-day / week mode uses `exclude_case_numbers` so later days take the next tranche.
+- Onboarding: `POST /seed/demo` (wipe + seed roster_3000) and `POST /reset` (empty without reseeding).
+- Court-Time-Planner UI shell (`ui/artifacts/court-time-planner`) wired to our FastAPI service.
 
 ## 4. Justify your complexity level
 
-- **L1 (fixed behaviour):** Fixed catalog (`src/catalog.py`), deterministic readiness (`src/readiness.py`), fixed duration table + greedy minute packer (`src/packer.py` / generate), Gherkin-style pytest. No ML, no agents, no learned distributions.
+- **L1 (fixed behaviour):** Fixed defect catalog, deterministic readiness, fixed duration table + greedy minute packer. No ML, no agents, no learned distributions.
 - **L2 / L3:** Not claimed.
 
 ## 5. Results
 
-- After seed of 3,000: roughly ~269 READY / ~2731 BLOCKED (varies with policy). A working day packs ~13 cases into ~420 mins (~93% of budget); remainder waitlisted for minute capacity, not defects.
-- **Visualisation:** Local UI (`ui/artifacts/court-time-planner`) — Overview (empty→Seed 3k), Roster, Eligibility, Cause List (Calendar gantt / List + Generate), Defect policy, Registry queue, case defect chips (Blocking / Soft / By law).
-- **Vs baseline 60-day dump:** Defective matters stay off eligibility until cleared; listed set is capacity-aware instead of “whatever CIS dumps.”
+- 3k roster seed → ~269 READY with soft RSVP policy (rest BLOCKED/HEALING).
+- Generate on a working day → ~13 listed / ~390 expected mins into 420 capacity; remainder waitlisted for minute capacity.
+- UI: Overview (Seed demo), Roster, Eligibility, Cause List (Calendar + Generate), Defect policy, Registry queue.
 
 ## 6. Specs for integration
 
-- **Data schema:** Roster CSV columns as hackathon sample; eligibility JSON (`case_number`, UPPER_SNAKE purpose, cleared codes, duration estimate, …). SQLite: `cases`, `defects`, `audit_log`, `drafts`, policy + judge prefs.
-- **Interfaces:** FastAPI `src/main.py` + Vite/React UI. Stub `X-Actor-Role: registry|counsel|party`.
-- **Dependencies:** Python 3.10+, fastapi, uvicorn, pydantic, pytest; UI via pnpm in `ui/`.
-- **Stubbed vs real:** Auth header stub; no blob store; no eCourts webhooks; calendar from CSV.
-- **Integration:** Point roster ETL at CIS export; SSO for actors; document store for evidence_uri; scheduler consumes `GET /eligibility` / `POST /generate`.
+- **Data:** Local `data/roster_3000.csv` + `data/court_calendar.csv`; SQLite `data/readiness.db` (gitignored).
+- **API:** FastAPI `src/main.py`; stub auth `X-Actor-Role: registry|counsel|party`.
+- **UI:** Vite/React Court-Time-Planner under `ui/`.
+- **Deps:** Python 3.10+, fastapi, uvicorn, pydantic, pytest; pnpm for UI.
 
 ## 7. How to run it
 
 ```bash
+# Terminal A — API
 cd submissions/sama-panda
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-# optional empty start — seed from UI (Seed demo roster) or:
-# curl -X POST localhost:8000/seed/demo
 uvicorn src.main:app --reload --host 127.0.0.1 --port 8000
 
-# UI (second terminal)
-cd ui/artifacts/court-time-planner
+# Seed demo roster (or use Overview → Seed in UI)
+curl -X POST http://127.0.0.1:8000/seed/demo
+
+# Terminal B — UI
+cd submissions/sama-panda/ui
 pnpm install
+cd artifacts/court-time-planner
 PORT=5173 BASE_PATH=/ pnpm dev
 # → http://127.0.0.1:5173/
 
 # smoke
-curl -s localhost:8000/stats
+curl -s http://127.0.0.1:8000/stats
 pytest -q src/tests
 ```
 
-Reset to empty without reseeding: `curl -X POST localhost:8000/reset`
+Reset to empty without reseeding: `curl -X POST http://127.0.0.1:8000/reset`
 
 ## 8. What we'd build next
 

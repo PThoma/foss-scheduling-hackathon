@@ -4,10 +4,11 @@ __pycache__/
 .pytest_cache/
 data/*.db
 data/*.db-*
-.DS_Store
 node_modules/
-**/node_modules/
+ui/**/node_modules/
+.DS_Store
 dist/
+.turbo/
 **/dist/
 *.tsbuildinfo
 .pnpm-store/
