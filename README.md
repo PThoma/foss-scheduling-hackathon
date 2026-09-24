@@ -18,12 +18,18 @@ Full context — the problem, the three judges' styles, the ask, and what "good"
 
 ```
 data/
-  roster_sample_100.csv             100-case sample roster (the docket you schedule against)
-  court_calendar.csv                working days, weekly offs, holidays
-  hearing_type_reference.csv        real hearings-per-case stats + estimated duration & ideal gap, per hearing type
-  hearing_failure_reasons.csv       real adjournment-reason breakdown, per hearing type (Kollam pilot data)
+  roster_sample_100.csv                 100-case sample roster (the docket you schedule against)
+  court_calendar.csv                    working days, weekly offs, holidays
+  hearing_type_reference.csv            real hearings-per-case stats + estimated duration & ideal gap, per hearing type
+  hearing_failure_reasons.csv           real adjournment-reason breakdown, per hearing type (Kollam pilot data)
+  substantiveness_by_hearing_type.csv   real probability a hearing of that type is substantive, per hearing type
+  sample_causelist_2026-09-22.csv       a real day's causelist shape, to check your output against
+  README.md                            what each file above contains
+scripts/
+  generate_roster.py                    scales roster_sample_100.csv up to a bigger synthetic roster
 Scheduling Justice - Case Study.pdf  full problem statement
 CONTRIBUTING.md                      how to submit — fork, branch, PR, and the structured write-up we need
+```
 
 ## Quick start
 
